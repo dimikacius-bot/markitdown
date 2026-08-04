@@ -9,7 +9,7 @@
 
 
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141310'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23b8935a' stroke-width='2'/%3E%3Cpath d='M16 10v6l4 3' stroke='%23b8935a' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
-<link rel="stylesheet" href="assets/app.css?v=c8766ff7f3">
+<link rel="stylesheet" href="assets/app.css?v=a296456e36">
 </head>
 <body>
 
@@ -77,14 +77,20 @@
       <span id="actifs-n"></span> filtre(s) actif(s) — tout afficher ✕
     </button>
     <span class="spacer"></span>
-    <label class="sr" for="sort">Trier</label>
-    <select class="sel" id="sort">
-      <option value="brand">Par maison</option>
-      <option value="priceUp">Prix croissant</option>
-      <option value="priceDown">Prix décroissant</option>
-      <option value="dia">Diamètre</option>
-      <option value="name">Nom du modèle</option>
-    </select>
+    <div class="pick" id="sort-pick">
+      <button class="pick-btn" id="sort-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="pick-lab">Trier</span>
+        <span class="pick-val" id="sort-val">Par maison</span>
+        <svg class="pick-arrow" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5l5-5"/></svg>
+      </button>
+      <ul class="pick-menu" id="sort-menu" role="listbox" aria-label="Trier" hidden>
+        <li role="option" tabindex="-1" data-v="brand">Par maison</li>
+        <li role="option" tabindex="-1" data-v="priceUp">Prix croissant</li>
+        <li role="option" tabindex="-1" data-v="priceDown">Prix décroissant</li>
+        <li role="option" tabindex="-1" data-v="dia">Diamètre</li>
+        <li role="option" tabindex="-1" data-v="name">Nom du modèle</li>
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -135,7 +141,7 @@
 <button class="totop" id="totop" aria-label="Revenir en haut">↑</button>
 <dialog class="sheet" id="sheet"><div class="sheet-in" id="sheet-in"></div></dialog>
 
-<script src="assets/data.js?v=c8766ff7f3"></script>
-<script src="assets/app.js?v=c8766ff7f3"></script>
+<script src="assets/data.js?v=a296456e36"></script>
+<script src="assets/app.js?v=a296456e36"></script>
 </body>
 </html>

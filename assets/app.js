@@ -513,6 +513,44 @@ function buildShow(){
   }
 }
 
+/* ------------------------------------------------- menu de tri sur mesure */
+function buildPick(){
+  const btn = $("#sort-btn"), menu = $("#sort-menu"), items = $$("#sort-menu li");
+  const peint = () => {
+    items.forEach(li => li.setAttribute("aria-selected", li.dataset.v === F.sort));
+    $("#sort-val").textContent = items.find(li => li.dataset.v === F.sort).textContent;
+  };
+  const ouvre = o => {
+    menu.hidden = !o;
+    btn.setAttribute("aria-expanded", o);
+    if(o) (items.find(li => li.dataset.v === F.sort) || items[0]).focus();
+  };
+  const choisit = v => { F.sort = v; peint(); render(); saveState(); ouvre(false); btn.focus(); };
+
+  btn.onclick = () => ouvre(menu.hidden);
+  menu.onclick = e => { const li = e.target.closest("li"); if(li) choisit(li.dataset.v); };
+  menu.onkeydown = e => {
+    const i = items.indexOf(document.activeElement);
+    if(e.key === "ArrowDown"){ e.preventDefault(); items[(i + 1) % items.length].focus(); }
+    if(e.key === "ArrowUp"){ e.preventDefault(); items[(i - 1 + items.length) % items.length].focus(); }
+    if(e.key === "Enter" || e.key === " "){ e.preventDefault(); choisit(items[i].dataset.v); }
+    if(e.key === "Escape"){ ouvre(false); btn.focus(); }
+  };
+  // un clic ailleurs referme : sans cela le menu resterait ouvert en arriere-plan
+  document.addEventListener("pointerdown", e => {
+    if(!menu.hidden && !$("#sort-pick").contains(e.target)) ouvre(false);
+  });
+  peint();
+}
+
+/* Amene les resultats sous la barre collante : sans cette compensation, les
+   premieres montres se retrouvent cachees derriere l'en-tete et les filtres. */
+function versResultats(){
+  const cible = $("#out").getBoundingClientRect().top + scrollY;
+  const barres = $("header.top").offsetHeight + $(".toolbar").offsetHeight;
+  scrollTo({top: Math.max(0, cible - barres - 8), behavior: "smooth"});
+}
+
 /* ------------------------------------------------------- etat persistant */
 /* Safari refuse localStorage sur les pages ouvertes en file:// et leve une
    exception : tout acces passe par ce garde, sinon le rendu s'interrompt. */
@@ -561,12 +599,19 @@ function init(){
   $("#q").value = F.q;
   $("#lo").value = F.lo; $("#hi").value = F.hi;
   $("#dmin").value = F.dmin; $("#dmax").value = F.dmax;
-  $("#sort").value = F.sort;
+  buildPick();
   $("#f-photo").classList.toggle("on", F.photo);
   $("#group").classList.toggle("on", F.group);
   priceLabel(); diaLabel();
 
   $("#q").addEventListener("input", e => { F.q = norm(e.target.value.trim()); render(); saveState(); });
+  $("#q").addEventListener("keydown", e => {
+    if(e.key !== "Enter") return;
+    e.preventDefault();
+    versResultats();
+    // on rend le clavier a l'ecran sur mobile, sinon il masque la moitie des resultats
+    if(matchMedia("(max-width: 760px)").matches) e.target.blur();
+  });
   $("#filters").onclick = () => {
     const open = $("#panel").classList.toggle("open");
     $("#filters").classList.toggle("on", open);
@@ -577,7 +622,6 @@ function init(){
   $("#dmin").oninput = e => { F.dmin = Math.min(+e.target.value, F.dmax); e.target.value=F.dmin; diaLabel(); render(); saveState(); };
   $("#dmax").oninput = e => { F.dmax = Math.max(+e.target.value, F.dmin); e.target.value=F.dmax; diaLabel(); render(); saveState(); };
   $("#f-photo").onclick = e => { F.photo = !F.photo; e.currentTarget.classList.toggle("on", F.photo); render(); saveState(); };
-  $("#sort").onchange = e => { F.sort = e.target.value; render(); saveState(); };
   $("#group").onclick = e => { F.group = !F.group; e.currentTarget.classList.toggle("on", F.group); render(); saveState(); };
   $("#reset").onclick = reset;
   $("#actifs").onclick = reset;

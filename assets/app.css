@@ -203,7 +203,32 @@ header.top{position:sticky;top:0;z-index:60;background:var(--paper);
 .actifs[hidden]{display:none}
 .count b{color:var(--ink);font-weight:600}
 .spacer{flex:1}
-.sel{background:var(--surface);border:1px solid var(--line2);border-radius:2px;padding:8px 10px;font-size:12px;cursor:pointer}
+/* Menu maison plutot que le <select> natif, dont l'apparence est imposee par
+   le systeme et jure avec le reste de la page. */
+.pick{position:relative}
+.pick-btn{display:flex;align-items:center;gap:9px;background:var(--surface);
+  border:1px solid var(--line2);border-radius:2px;padding:7px 11px;cursor:pointer;
+  transition:border-color .15s ease}
+.pick-btn:hover,.pick-btn[aria-expanded=true]{border-color:var(--gold)}
+.pick-lab{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+.pick-val{font-size:12.5px;color:var(--ink);white-space:nowrap}
+.pick-arrow{width:10px;height:7px;fill:none;stroke:var(--faint);stroke-width:1.6;
+  stroke-linecap:round;stroke-linejoin:round;transition:transform .22s ease}
+.pick-btn[aria-expanded=true] .pick-arrow{transform:rotate(180deg)}
+.pick-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:70;margin:0;padding:5px;
+  list-style:none;min-width:190px;background:var(--surface);border:1px solid var(--line2);
+  border-radius:3px;box-shadow:var(--shadow);
+  animation:pick-ouvre .18s cubic-bezier(.22,.61,.36,1) both}
+@media(prefers-reduced-motion:reduce){.pick-menu{animation:none}}
+@keyframes pick-ouvre{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.pick-menu[hidden]{display:none}
+.pick-menu li{padding:8px 11px;font-size:12.5px;border-radius:2px;cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:background-color .13s ease}
+.pick-menu li:hover,.pick-menu li:focus-visible{background:var(--tile);outline:none}
+.pick-menu li[aria-selected=true]{color:var(--gold)}
+.pick-menu li[aria-selected=true]::before{content:"";width:5px;height:5px;border-radius:50%;
+  background:var(--gold);flex:none}
+.pick-menu li:not([aria-selected=true])::before{content:"";width:5px;flex:none}
 
 .panel{border-bottom:1px solid var(--line);background:var(--surface);display:none}
 .panel.open{display:block}
