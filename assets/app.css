@@ -88,13 +88,18 @@ header.top{position:sticky;top:0;z-index:60;background:var(--paper);
 .top-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 .search{position:relative;flex:1;max-width:340px;margin-left:auto}
 .search input{width:100%;background:var(--surface);border:1px solid var(--line2);border-radius:2px;
-  padding:9px 12px 9px 32px;font-size:13px}
+  padding:9px 12px 9px 32px;font-size:13px;
+  transition:border-color .22s ease,box-shadow .22s ease}
+.search input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-wash)}
 .search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:14px;height:14px;
-  stroke:var(--faint);fill:none;stroke-width:2}
+  stroke:var(--faint);fill:none;stroke-width:2;transition:stroke .22s ease}
+.search:focus-within svg{stroke:var(--gold)}
 .btn{border:1px solid var(--line2);background:transparent;cursor:pointer;font-size:10px;letter-spacing:.12em;
-  text-transform:uppercase;padding:9px 13px;border-radius:2px;transition:border-color .15s ease,color .15s ease,background-color .15s ease;white-space:nowrap;font-weight:500}
+  text-transform:uppercase;padding:9px 13px;border-radius:2px;transition:border-color .15s ease,color .15s ease,background-color .15s ease,transform .12s ease;white-space:nowrap;font-weight:500}
 .btn:hover{border-color:var(--gold);color:var(--gold)}
+.btn:active{transform:translateY(1px)}
 .btn.on{background:var(--dark);color:var(--paper);border-color:var(--dark)}
+.chip:active{transform:translateY(1px)}
 @media(max-width:900px){.hide-m{display:none}}
 @media(max-width:620px){.hide-s{display:none}.search{max-width:none}}
 
@@ -213,6 +218,10 @@ header.top{position:sticky;top:0;z-index:60;background:var(--paper);
   backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
 .toolbar-in{display:flex;align-items:center;gap:10px;padding-block:10px;flex-wrap:wrap}
 .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* le decompte se rallume brievement a chaque changement de filtre */
+.count.maj{animation:cpt .4s ease both}
+@keyframes cpt{from{opacity:.3}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.count.maj{animation:none}}
 .actifs{border:1px solid var(--gold);background:var(--gold-wash);color:var(--gold);
   font-size:11px;padding:5px 10px;border-radius:2px;cursor:pointer;white-space:nowrap;
   transition:background-color .15s ease}
@@ -247,15 +256,24 @@ header.top{position:sticky;top:0;z-index:60;background:var(--paper);
   background:var(--gold);flex:none}
 .pick-menu li:not([aria-selected=true])::before{content:"";width:5px;flex:none}
 
-.panel{border-bottom:1px solid var(--line);background:var(--surface);display:none}
-.panel.open{display:block}
+/* Le panneau se deplie au lieu de surgir. La hauteur reste inconnue jusqu'au
+   rendu : une grille dont la rangee passe de 0fr a 1fr s'anime sans qu'on ait
+   a la mesurer. Un navigateur qui ne sait pas interpoler l'unite ouvre d'un
+   coup, ce qui reste correct. */
+.panel{display:grid;grid-template-rows:0fr;background:var(--surface);
+  border-bottom:1px solid transparent;
+  transition:grid-template-rows .4s cubic-bezier(.22,.61,.36,1),
+             border-bottom-color .4s ease,visibility .4s;visibility:hidden}
+.panel>*{overflow:hidden;min-height:0}
+.panel.open{grid-template-rows:1fr;border-bottom-color:var(--line);visibility:visible}
+@media(prefers-reduced-motion:reduce){.panel{transition:none}}
 .panel-in{display:grid;gap:22px;padding:22px 0 24px;
   grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
 .fgroup h3{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);
   margin:0 0 10px;font-weight:600}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line2);background:transparent;border-radius:2px;padding:5px 9px;font-size:11.5px;
-  cursor:pointer;transition:border-color .13s ease,color .13s ease,background-color .13s ease;display:inline-flex;align-items:center;gap:5px}
+  cursor:pointer;transition:border-color .13s ease,color .13s ease,background-color .13s ease,transform .12s ease;display:inline-flex;align-items:center;gap:5px}
 .chip:hover{border-color:var(--gold)}
 .chip.on{background:var(--gold-wash);border-color:var(--gold);color:var(--gold)}
 .chip i{font-style:normal;font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
@@ -270,8 +288,15 @@ input[type=range]{width:100%;accent-color:var(--gold);margin:2px 0}
 
 /* ---------- grille ---------- */
 main{padding:22px 0 60px;min-height:60vh}
-.brandhead{display:flex;align-items:baseline;gap:12px;margin:30px 0 14px;padding-bottom:9px;
-  border-bottom:1px solid var(--line2);scroll-margin-top:calc(var(--head-h) + 58px)}
+.brandhead{position:relative;display:flex;align-items:baseline;gap:12px;margin:30px 0 14px;
+  padding-bottom:9px;border-bottom:1px solid var(--line2);
+  scroll-margin-top:calc(var(--head-h) + 58px)}
+/* filet dore qui se trace sous le nom de la maison quand la rangee apparait ;
+   pose a l'endroit par defaut, il reste visible si rien ne l'anime */
+.brandhead::after{content:"";position:absolute;left:0;bottom:-1px;width:56px;height:1px;
+  background:var(--gold);transform-origin:left;
+  transition:transform .7s cubic-bezier(.22,.61,.36,1) .08s}
+html.reveal .brandhead.hidden::after{transform:scaleX(0)}
 .brandhead:first-child{margin-top:4px}
 .brandhead h2{font-family:var(--title);font-size:17px;letter-spacing:.13em;font-weight:600;margin:0}
 .brandhead span{font-size:10.5px;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
@@ -285,6 +310,16 @@ main{padding:22px 0 60px;min-height:60vh}
 .shot{position:relative;aspect-ratio:1/1;background:var(--tile);overflow:hidden;
   display:flex;align-items:center;justify-content:center}
 .shot img{width:100%;height:100%;object-fit:cover}
+/* La photo avance lentement vers le regard pendant que la carte se souleve.
+   Une seule propriete composee, donc rien a repeindre. */
+.shot img,.shot svg{transition:transform .65s cubic-bezier(.22,.61,.36,1)}
+.card:hover .shot img,.card:hover .shot svg{transform:scale(1.05)}
+/* Fondu a l'arrivee de l'image. La classe n'est posee que sur les images qui
+   ne sont pas encore peintes, et l'erreur de chargement la leve aussi : une
+   photo manquante ne peut donc pas laisser une case vide. */
+.shot img.fondu{opacity:0}
+.shot img.fondu.vue{opacity:1;transition:opacity .55s ease,
+  transform .65s cubic-bezier(.22,.61,.36,1)}
 /* Largeur en pourcentage, hauteur deduite du viewBox. Une hauteur en
    pourcentage dans un bloc dont la hauteur vient d'un aspect-ratio se resout
    a zero sur Safari : l'illustration disparaissait purement et simplement. */
@@ -304,7 +339,7 @@ main{padding:22px 0 60px;min-height:60vh}
   color:var(--muted);border:1px solid var(--line)}
 /* Apparition au defilement. L'etat de depart n'est pose que si le navigateur
    sait l'annuler : sans IntersectionObserver, les cartes resteraient invisibles. */
-html.reveal .card.hidden{opacity:0;transform:translateY(14px)}
+html.reveal .card.hidden{opacity:0;transform:translateY(14px) scale(.985)}
 html.reveal .card{transition:opacity .55s cubic-bezier(.22,.61,.36,1),
   transform .55s cubic-bezier(.22,.61,.36,1),
   border-color .17s ease,box-shadow .17s ease}
@@ -312,6 +347,8 @@ html.reveal .brandhead.hidden{opacity:0;transform:translateY(8px)}
 html.reveal .brandhead{transition:opacity .5s ease,transform .5s ease}
 @media(prefers-reduced-motion:reduce){
   html.reveal .card.hidden,html.reveal .brandhead.hidden{opacity:1;transform:none}
+  .card:hover .shot img,.card:hover .shot svg{transform:none}
+  .shot img.fondu{opacity:1}
 }
 .empty{text-align:center;padding:70px 20px;color:var(--muted)}
 .empty b{display:block;font-family:var(--serif);font-size:24px;color:var(--ink);margin-bottom:8px}
@@ -329,7 +366,19 @@ dialog.sheet[open] .sheet-in{animation:fiche .38s cubic-bezier(.22,.61,.36,1) bo
   @keyframes fiche{from{opacity:0;transform:translate(-50%,-46%) scale(.975)}
     to{opacity:1;transform:translate(-50%,-50%)}}
 }
-@media(prefers-reduced-motion:reduce){dialog.sheet[open] .sheet-in{animation:none}}
+/* Fermeture : la fiche redescend au lieu de disparaitre d'un coup. Le voile
+   s'efface en meme temps, sinon la page reapparaitrait derriere un ecran noir. */
+dialog.sheet.ferme[open]::backdrop{background:rgba(12,11,9,0);backdrop-filter:blur(0px);
+  transition:background-color .24s ease,backdrop-filter .24s ease}
+dialog.sheet.ferme[open] .sheet-in{animation:fiche-sort .24s cubic-bezier(.4,0,.7,.4) both}
+@keyframes fiche-sort{to{opacity:0;transform:translateY(14px) scale(.99)}}
+@media(min-width:860px){
+  @keyframes fiche-sort{from{transform:translate(-50%,-50%)}
+    to{opacity:0;transform:translate(-50%,-47%) scale(.985)}}
+}
+@media(prefers-reduced-motion:reduce){
+  dialog.sheet[open] .sheet-in,dialog.sheet.ferme[open] .sheet-in{animation:none}
+}
 .sheet-in{position:absolute;inset:auto 0 0 0;background:var(--surface);border-top:1px solid var(--line2);
   max-height:94vh;overflow:auto;border-radius:6px 6px 0 0}
 @media(min-width:860px){
@@ -366,5 +415,7 @@ footer{border-top:1px solid var(--line);padding:28px 0 44px;color:var(--muted);f
 .fw{font-family:var(--title);font-size:13px;letter-spacing:.18em;color:var(--ink);margin-bottom:8px}
 .totop{position:fixed;right:16px;bottom:16px;z-index:55;width:40px;height:40px;border-radius:50%;
   border:1px solid var(--line2);background:var(--surface);cursor:pointer;box-shadow:var(--shadow);
-  opacity:0;pointer-events:none;transition:.2s}
-.totop.on{opacity:1;pointer-events:auto}
+  opacity:0;pointer-events:none;transform:translateY(10px);
+  transition:opacity .3s ease,transform .3s cubic-bezier(.22,.61,.36,1),border-color .2s ease}
+.totop.on{opacity:1;transform:none;pointer-events:auto}
+.totop:hover{border-color:var(--gold);color:var(--gold)}

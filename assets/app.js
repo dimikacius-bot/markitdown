@@ -40,6 +40,20 @@ const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;")
                           .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 const norm = s => s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase();
 const slug = s => s.replace(/[^a-zA-Z0-9]/g,"");
+// le titre annonce le nombre de maisons en toutes lettres : il doit suivre le
+// repertoire sans qu'on y pense
+const enLettres = n => {
+  const u = ["zéro","une","deux","trois","quatre","cinq","six","sept","huit","neuf","dix",
+             "onze","douze","treize","quatorze","quinze","seize","dix-sept","dix-huit","dix-neuf"];
+  const d = {2:"vingt",3:"trente",4:"quarante",5:"cinquante",6:"soixante",8:"quatre-vingt"};
+  if(n < 20) return u[n];
+  if(n >= 100) return String(n);
+  const base = n < 70 ? Math.floor(n/10) : n < 80 ? 6 : 8;
+  const reste = n - base*10;
+  if(!reste) return base === 8 ? "quatre-vingts" : d[base];
+  const et = (reste === 1 && base < 8) || (reste === 11 && base === 6);
+  return d[base] + (et ? " et " : "-") + u[reste];
+};
 const buyLink = w => "https://www.google.com/search?q=" +
   encodeURIComponent(w.ref ? `${w.brand} "${w.ref}"` : `${w.brand} ${w.model} montre`);
 
@@ -262,9 +276,13 @@ function render(){
   }
 
   reveler();
+  fondu(out);
   const brands = new Set(list.map(w=>w.brand)).size;
-  $("#count").innerHTML = `<b>${list.length}</b> montre${list.length>1?"s":""}
+  const cpt = $("#count");
+  cpt.innerHTML = `<b>${list.length}</b> montre${list.length>1?"s":""}
     · <b>${brands}</b> maison${brands>1?"s":""}`;
+  // le decompte change a chaque frappe : un bref voile le signale sans clignoter
+  cpt.classList.remove("maj"); void cpt.offsetWidth; cpt.classList.add("maj");
   // un filtre actif ne doit jamais passer inapercu : sans ce rappel, un
   // catalogue restreint se confond avec un catalogue incomplet
   const actifs = F.brands.size + F.types.size + F.cases.size + F.styles.size + F.disp.size
@@ -276,6 +294,19 @@ function render(){
 }
 
 /* ------------------------------------------------ apparition au defilement */
+/* Fondu a l'arrivee des photos. Seules les images pas encore peintes reçoivent
+   la classe, et l'echec de chargement la leve comme la reussite : une image
+   absente ne peut donc pas laisser une case blanche. */
+function fondu(racine){
+  for(const img of $$("img", racine)){
+    if(img.complete || img.classList.contains("fondu")) continue;
+    img.classList.add("fondu");
+    const vue = () => img.classList.add("vue");
+    img.addEventListener("load", vue, {once: true});
+    img.addEventListener("error", vue, {once: true});
+  }
+}
+
 let veilleur = null;
 function reveler(){
   if(!("IntersectionObserver" in window)) return;
@@ -410,20 +441,34 @@ function openSheet(id){
              target="_blank" rel="noopener">Site ${esc(w.brand)}</a>
           <button class="btn" id="sheet-close2">Fermer</button>
         </div>
-        <p class="credit">Prix relevé en août 2026 sur le marché français. Les liens
-          ci-dessus interrogent ${esc(w.ref ? "la référence " + w.ref : w.brand + " " + w.model)}
-          et affichent les tarifs du jour, qui peuvent avoir bougé depuis.</p>
+        <p class="credit">${w.ok
+            ? "Prix relevé en août 2026 sur le marché français."
+            : "Prix estimé, non relevé : les liens ci-dessus donnent le tarif réel du jour."}
+          Ils interrogent ${esc(w.ref ? "la référence " + w.ref : w.brand + " " + w.model)}
+          et affichent les annonces correspondantes.</p>
       </div>
     </div>`;
   const dlg = $("#sheet");
-  $("#sheet-close").onclick = $("#sheet-close2").onclick = () => dlg.close();
+  $("#sheet-close").onclick = $("#sheet-close2").onclick = fermeSheet;
   $$("#sheet .thumbs button").forEach(b => b.onclick = () => {
     $$("#sheet .thumbs button").forEach(x => x.classList.remove("on"));
     b.classList.add("on");
     const shot = $("#sheet-shot");
     shot.firstElementChild.outerHTML = big(+b.dataset.i);
+    fondu(shot);
   });
   if(!dlg.open) dlg.showModal();
+  fondu(dlg);
+}
+
+/* La fiche redescend au lieu de disparaitre. Le repli ferme sans attendre :
+   une fiche qui resterait ouverte serait pire qu'une fermeture seche. */
+function fermeSheet(){
+  const dlg = $("#sheet");
+  if(!dlg.open || dlg.classList.contains("ferme")) return;
+  if(matchMedia("(prefers-reduced-motion: reduce)").matches){ dlg.close(); return; }
+  dlg.classList.add("ferme");
+  setTimeout(() => { dlg.classList.remove("ferme"); dlg.close(); }, 230);
 }
 
 /* ---------------------------------------------------- vitrine d'accueil */
@@ -655,13 +700,17 @@ function init(){
   $("#out").addEventListener("click", e => {
     const c = e.target.closest(".card"); if(c) openSheet(c.dataset.id);
   });
-  $("#sheet").addEventListener("click", e => { if(e.target.id === "sheet") $("#sheet").close(); });
+  $("#sheet").addEventListener("click", e => { if(e.target.id === "sheet") fermeSheet(); });
+  // Echap passe par l'annulation native : on la reprend pour animer la sortie
+  $("#sheet").addEventListener("cancel", e => { e.preventDefault(); fermeSheet(); });
 
   // le catalogue s'affiche d'abord : rien d'accessoire ne doit pouvoir le bloquer
   buildShow();
+  const maisons = new Set(ALL.map(w => w.brand)).size;
   $("#n-watches").textContent = ALL.length;
-  $("#n-brands").textContent = new Set(ALL.map(w => w.brand)).size;
+  $("#n-brands").textContent = maisons;
   $("#n-photos").textContent = ALL.filter(w => w.shots.length).length;
+  $("#h-brands").textContent = enLettres(maisons);
   render();
 
   const theme = store.get("mitry-theme");
