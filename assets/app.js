@@ -9,7 +9,8 @@ const CASE_LABELS = {
   breitlight:"Breitlight",
 };
 const TYPE_LABELS  = {auto:"Automatique", manuel:"Remontage manuel", quartz:"Quartz",
-                      solaire:"Solaire", springdrive:"Spring Drive", "connectée":"Connectée"};
+                      solaire:"Solaire", springdrive:"Spring Drive", kinetic:"Kinetic",
+                      "connectée":"Connectée"};
 const STYLE_LABELS = {dive:"Plongée", chrono:"Chronographe", dress:"Habillée",
                       pilot:"Aviation", sport:"Sport"};
 const DISP_LABELS  = {aiguilles:"Aiguilles", digital:"Écran", hybride:"Écran + aiguilles"};
@@ -259,6 +260,7 @@ function render(){
     out.innerHTML = `<div class="grid">${list.map(cardHTML).join("")}</div>`;
   }
 
+  reveler();
   const brands = new Set(list.map(w=>w.brand)).size;
   $("#count").innerHTML = `<b>${list.length}</b> montre${list.length>1?"s":""}
     · <b>${brands}</b> maison${brands>1?"s":""}`;
@@ -270,6 +272,28 @@ function render(){
   $("#actifs").hidden = actifs === 0;
   $("#actifs-n").textContent = actifs;
   refreshCounts();
+}
+
+/* ------------------------------------------------ apparition au defilement */
+let veilleur = null;
+function reveler(){
+  if(!("IntersectionObserver" in window)) return;
+  document.documentElement.classList.add("reveal");
+  veilleur = veilleur || new IntersectionObserver(entrees => {
+    for(const e of entrees){
+      if(!e.isIntersecting) continue;
+      // léger décalage d'une carte à l'autre : la rangée se dévoile de gauche
+      // à droite au lieu d'apparaître d'un bloc
+      const i = [...e.target.parentElement.children].indexOf(e.target);
+      e.target.style.transitionDelay = Math.min(i % 8, 7) * 45 + "ms";
+      e.target.classList.remove("hidden");
+      veilleur.unobserve(e.target);
+    }
+  }, {rootMargin: "260px 0px", threshold: 0.02});
+  for(const el of $$(".card:not(.vu), .brandhead:not(.vu)")){
+    el.classList.add("hidden", "vu");
+    veilleur.observe(el);
+  }
 }
 
 /* ---- facettes : le compteur montre ce qui resterait si on coche l'entree ---- */
@@ -666,9 +690,9 @@ function init(){
         applique();
         requestAnimationFrame(() => {
           voile.classList.remove("pose");
-          setTimeout(() => voile.remove(), 400);
+          setTimeout(() => voile.remove(), 520);
         });
-      }, 310);
+      }, 460);
     });
   };
 
