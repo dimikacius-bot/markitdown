@@ -221,24 +221,23 @@ function pass(w, skip){
 const selected = () => ALL.filter(w => pass(w));
 
 /* ------------------------------------------------------------------ rendu */
+/* Toutes les pieces publiees sont photographiees : une pastille "Photo" sur
+   chacune n'apprendrait rien. Seule la variante merite d'etre signalee. */
 function shotHTML(w, lazy=true){
   const s = w.shots[0];
   if(!s) return `<div class="shot">${watchSVG(w)}<span class="tag">Illustration</span></div>`;
-  const label = s.tier === "famille" ? "Photo · variante" : "Photo";
   return `<div class="shot"><img src="${esc(shotURL(s.file, "thumb"))}" alt="${esc(w.brand+" "+w.model)}"
     ${lazy?'loading="lazy" decoding="async"':""}>
-    <span class="tag photo">${label}</span></div>`;
+    ${s.tier === "famille" ? '<span class="tag">Variante</span>' : ""}</div>`;
 }
 
 function cardHTML(w){
-  const bits = [TYPE_LABELS[w.type]||w.type, w.size, CASE_LABELS[w.case]||""];
   return `<button class="card" data-id="${esc(w.id)}">
     ${shotHTML(w)}
     <div class="cbody">
       <div class="cbrand">${esc(w.brand)}</div>
       <div class="cmodel">${esc(w.model)}</div>
-      <div class="cprice">${w.ok?"":"≈ "}${fmt(w.price)} ${w.ok?'<small>✓ relevé</small>':""}</div>
-      <div class="cmeta">${bits.filter(Boolean).map(b=>`<span class="pill">${esc(b)}</span>`).join("")}</div>
+      <div class="cprice">${w.ok?"":"≈ "}${fmt(w.price)}</div>
     </div></button>`;
 }
 
@@ -379,19 +378,15 @@ function diaLabel(){
 
 /* ------------------------------------------------------------------ fiche */
 function specRows(w){
-  const yes = v => v ? "Oui" : "Non";
+  // le prix figure deja en grand au-dessus, et une ligne "Date : Non" occupe
+  // autant de place qu'une information
   const rows = [
-    ["Prix", (w.ok?"":"≈ ") + fmt(w.price) + (w.ok?" · relevé":" · estimation")],
-    w.market ? ["Cote marché", fmt(w.market)] : null,
     ["Mouvement", TYPE_LABELS[w.type]||w.type],
     ["Boîtier", CASE_LABELS[w.case]||w.case],
     ["Taille", w.size],
-    ["Affichage", DISP_LABELS[w.disp]||w.disp],
-    ["Style", STYLE_LABELS[w.style]||w.style],
     w.glass ? ["Verre", GLASS_LABELS[w.glass]] : null,
     w.wr ? ["Étanchéité", w.wr + " m"] : null,
     w.band ? ["Bracelet", BAND_LABELS[w.band]||w.band] : null,
-    ["Date", yes(w.date)],
     w.chrono ? ["Chronographe", "Oui"] : null,
     w.ref ? ["Référence", w.ref] : null,
   ].filter(Boolean);
@@ -399,17 +394,23 @@ function specRows(w){
     `<div class="spec"><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("");
 }
 
+/* Un seul bloc en bas de fiche : origine du prix, puis credit de la photo.
+   Deux paragraphes distincts alourdissaient la fin de chaque fiche. */
 function creditHTML(w){
   const s = w.shots[0];
-  if(!s) return `<p class="credit">Visuel : rendu vectoriel généré à partir des
-    caractéristiques de la pièce — ce n'est pas une photographie du garde-temps.</p>`;
-  if(s.src !== "commons") return "";
-  const who = s.artist ? esc(s.artist) : "auteur non précisé";
-  const warn = s.tier === "famille"
-    ? `<br><strong>Variante :</strong> cette photo illustre la collection, pas nécessairement la référence exacte.`
+  const prix = w.ok
+    ? "Prix relevé en août 2026 sur le marché français."
+    : `Prix estimé. Les liens ci-dessus interrogent ${
+        esc(w.ref ? "la référence " + w.ref : w.brand + " " + w.model)} et donnent le tarif du jour.`;
+  if(!s) return `<p class="credit">${prix} Visuel : rendu vectoriel, pas une photographie.</p>`;
+  if(s.src !== "commons") return `<p class="credit">${prix}</p>`;
+  const variante = s.tier === "famille"
+    ? " Variante : la photo illustre la collection, pas forcément la référence exacte."
     : "";
-  return `<p class="credit">Photo : <a href="${esc(s.page)}" target="_blank" rel="noopener">${esc(s.title)}</a>
-    — ${who}, ${esc(s.license||"voir la page")} via Wikimedia Commons.${warn}</p>`;
+  return `<p class="credit">${prix}${variante}<br>
+    Photo <a href="${esc(s.page)}" target="_blank" rel="noopener">${esc(s.title)}</a>,
+    ${esc(s.artist || "auteur non précisé")} — ${esc(s.license || "voir la page")},
+    Wikimedia Commons.</p>`;
 }
 
 function openSheet(id){
@@ -431,7 +432,6 @@ function openSheet(id){
         <div class="sheet-price">${w.ok?"":"≈ "}${fmt(w.price)}</div>
         <p class="sheet-note">${esc(w.note)}</p>
         <dl class="specs">${specRows(w)}</dl>
-        ${creditHTML(w)}
         <div class="sheet-actions">
           <a class="btn primary" href="${esc(w.marketUrl || buyLink(w))}"
              target="_blank" rel="noopener">Cote du marché</a>
@@ -439,17 +439,12 @@ function openSheet(id){
              target="_blank" rel="noopener">Trouver un vendeur</a>
           <a class="btn" href="${esc(w.officialUrl || buyLink(w))}"
              target="_blank" rel="noopener">Site ${esc(w.brand)}</a>
-          <button class="btn" id="sheet-close2">Fermer</button>
         </div>
-        <p class="credit">${w.ok
-            ? "Prix relevé en août 2026 sur le marché français."
-            : "Prix estimé, non relevé : les liens ci-dessus donnent le tarif réel du jour."}
-          Ils interrogent ${esc(w.ref ? "la référence " + w.ref : w.brand + " " + w.model)}
-          et affichent les annonces correspondantes.</p>
+        ${creditHTML(w)}
       </div>
     </div>`;
   const dlg = $("#sheet");
-  $("#sheet-close").onclick = $("#sheet-close2").onclick = fermeSheet;
+  $("#sheet-close").onclick = fermeSheet;
   $$("#sheet .thumbs button").forEach(b => b.onclick = () => {
     $$("#sheet .thumbs button").forEach(x => x.classList.remove("on"));
     b.classList.add("on");
@@ -504,7 +499,7 @@ function paintShow(){
   const w = showList[showAt]; if(!w) return;
   const s = w.shots[0];
   $("#stage").innerHTML =
-    `<span class="stage-tag">${s.tier === "famille" ? "Photo · variante" : "Photo"}</span>
+    `${s.tier === "famille" ? '<span class="stage-tag">Variante</span>' : ""}
      <img src="${esc(shotURL(s.file))}" alt="${esc(w.brand + " " + w.model)}">
      <div class="stage-nav">
        <button type="button" data-d="-1" aria-label="Montre précédente">‹</button>
@@ -516,9 +511,6 @@ function paintShow(){
   $("#show-price").innerHTML = `${w.ok ? "" : "≈ "}${fmt(w.price)}
     <small>${w.ok ? "tarif relevé" : "estimation"}</small>`;
   $("#show-note").textContent = w.note;
-  $("#show-meta").innerHTML = [TYPE_LABELS[w.type] || w.type, w.size,
-    CASE_LABELS[w.case] || "", w.wr ? w.wr + " m" : ""]
-    .filter(Boolean).map(b => `<span class="pill">${esc(b)}</span>`).join("");
   $("#show-site").href = w.officialUrl || "#";
   $("#show-site").textContent = "Site " + w.brand;
   $$("#ribbon-track .ribbon-item").forEach(b => {
@@ -706,11 +698,7 @@ function init(){
 
   // le catalogue s'affiche d'abord : rien d'accessoire ne doit pouvoir le bloquer
   buildShow();
-  const maisons = new Set(ALL.map(w => w.brand)).size;
-  $("#n-watches").textContent = ALL.length;
-  $("#n-brands").textContent = maisons;
-  $("#n-photos").textContent = ALL.filter(w => w.shots.length).length;
-  $("#h-brands").textContent = enLettres(maisons);
+  $("#h-brands").textContent = enLettres(new Set(ALL.map(w => w.brand)).size);
   render();
 
   const theme = store.get("mitry-theme");

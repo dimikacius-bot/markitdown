@@ -28,8 +28,12 @@ sonde ne conclut donc que depuis un réseau qui l'atteint.
 - `img/orig/` — les photos venues du fichier d'origine, introuvables ailleurs.
   Les visuels Commons se retéléchargent, ceux-ci non.
 
-## Règle
+## Deux filtres à la publication
 
-Une fiche ne paraît que si elle porte une photographie : `PHOTOS_SEULEMENT`
-dans `build/bundle.py`. Les pièces sans visuel restent complètes dans
-`data/watches.json` et reparaissent dès qu'une photo est trouvée.
+Tous deux dans `build/bundle.py`, appliqués à la construction et non aux
+données : les fiches écartées restent complètes dans `data/watches.json`.
+
+- `PHOTOS_SEULEMENT` — une fiche ne paraît que si elle porte une photographie.
+- `SANS_CONNECTEES` — les ordinateurs de poignet ne paraissent pas. Le type
+  `connectée` ne suffit pas à les désigner tous (une Instinct solaire, une
+  Vertical en sont aussi), d'où la liste `CONNECTEES` de maisons.
