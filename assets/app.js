@@ -258,6 +258,13 @@ function render(){
   const brands = new Set(list.map(w=>w.brand)).size;
   $("#count").innerHTML = `<b>${list.length}</b> montre${list.length>1?"s":""}
     · <b>${brands}</b> maison${brands>1?"s":""}`;
+  // un filtre actif ne doit jamais passer inapercu : sans ce rappel, un
+  // catalogue restreint se confond avec un catalogue incomplet
+  const actifs = F.brands.size + F.types.size + F.cases.size + F.styles.size + F.disp.size
+    + (F.q ? 1 : 0) + (F.photo ? 1 : 0) + (F.lo > 0 || F.hi < LAST ? 1 : 0)
+    + (F.dmin > 0 || F.dmax < 60 ? 1 : 0);
+  $("#actifs").hidden = actifs === 0;
+  $("#actifs-n").textContent = actifs;
   refreshCounts();
 }
 
@@ -513,17 +520,24 @@ const store = {
   get(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } },
   set(k, v){ try{ localStorage.setItem(k, v); }catch(e){} },
 };
+/* Les filtres ne survivent pas a la fermeture du navigateur : reappliquer en
+   silence une selection oubliee donne un catalogue qui parait vide. Le theme,
+   lui, reste un reglage durable. */
+const sessionStore = {
+  get(k){ try{ return sessionStorage.getItem(k); }catch(e){ return null; } },
+  set(k, v){ try{ sessionStorage.setItem(k, v); }catch(e){} },
+};
 
 const KEY = "mitry-watch-filters";
 function saveState(){
-  store.set(KEY, JSON.stringify({
+  sessionStore.set(KEY, JSON.stringify({
     ...F, brands:[...F.brands], types:[...F.types], cases:[...F.cases],
     styles:[...F.styles], disp:[...F.disp],
   }));
 }
 function loadState(){
   try{
-    const s = JSON.parse(store.get(KEY) || "null"); if(!s) return;
+    const s = JSON.parse(sessionStore.get(KEY) || "null"); if(!s) return;
     for(const k of ["brands","types","cases","styles","disp"])
       if(Array.isArray(s[k])) F[k] = new Set(s[k]);
     for(const k of ["q","lo","hi","dmin","dmax","photo","sort","group"])
@@ -566,6 +580,7 @@ function init(){
   $("#sort").onchange = e => { F.sort = e.target.value; render(); saveState(); };
   $("#group").onclick = e => { F.group = !F.group; e.currentTarget.classList.toggle("on", F.group); render(); saveState(); };
   $("#reset").onclick = reset;
+  $("#actifs").onclick = reset;
 
   $("#out").addEventListener("click", e => {
     const c = e.target.closest(".card"); if(c) openSheet(c.dataset.id);
@@ -587,14 +602,26 @@ function init(){
       || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
     const next = cur === "dark" ? "light" : "dark";
     const applique = () => { root.dataset.theme = next; store.set("mitry-theme", next); };
+    const sobre = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(sobre){ applique(); return; }
     // le navigateur photographie la page, applique le theme, puis fond les deux
     // images l'une dans l'autre : une seule couche animee au lieu de centaines
-    if(document.startViewTransition
-       && !matchMedia("(prefers-reduced-motion: reduce)").matches){
-      document.startViewTransition(applique);
-    } else {
-      applique();
-    }
+    if(document.startViewTransition){ document.startViewTransition(applique); return; }
+    const voile = document.createElement("div");
+    voile.className = "voile";
+    voile.style.background = getComputedStyle(root)
+      .getPropertyValue("--paper-" + next).trim() || "#000";
+    document.body.appendChild(voile);
+    requestAnimationFrame(() => {
+      voile.classList.add("pose");
+      setTimeout(() => {
+        applique();
+        requestAnimationFrame(() => {
+          voile.classList.remove("pose");
+          setTimeout(() => voile.remove(), 400);
+        });
+      }, 310);
+    });
   };
 
   const top = $("#totop");
