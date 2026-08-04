@@ -76,7 +76,8 @@ button,select,input{font:inherit;color:inherit}
 @media(min-width:760px){.wrap{padding:0 32px}}
 
 /* ---------- en-tete ---------- */
-header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--paper) 97%,transparent);
+header.top{position:sticky;top:0;z-index:60;background:var(--paper);
+  background:color-mix(in srgb,var(--paper) 97%,transparent);
   backdrop-filter:saturate(180%) blur(16px);border-bottom:1px solid var(--line)}
 .top-in{display:flex;align-items:center;gap:14px;height:var(--head-h)}
 .crest{width:34px;height:34px;border-radius:50%;object-fit:cover;border:1px solid var(--gold);flex:none}
@@ -116,8 +117,11 @@ header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--p
 /* contain plutot que cover : les photos viennent de sources tres differentes,
    un recadrage automatique amputerait certains boitiers */
 .stage{position:relative;aspect-ratio:1/1;background:var(--surface);border:1px solid var(--line2);
-  border-radius:3px;overflow:hidden;cursor:pointer;max-height:430px;display:grid;place-items:center}
-.stage img{width:100%;height:100%;object-fit:contain;padding:14px;
+  border-radius:3px;overflow:hidden;cursor:pointer;max-height:430px}
+/* centrage par positionnement absolu plutot que par hauteur en pourcentage,
+   pour la meme raison que les illustrations des cartes */
+.stage img{position:absolute;inset:14px;margin:auto;width:auto;height:auto;
+  max-width:calc(100% - 28px);max-height:calc(100% - 28px);object-fit:contain;
   animation:fade .7s cubic-bezier(.22,.61,.36,1) both}
 @media(prefers-reduced-motion:reduce){.stage img{animation:none}}
 @keyframes fade{from{opacity:0;transform:scale(1.02)}to{opacity:1;transform:none}}
@@ -129,6 +133,7 @@ header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--p
 @keyframes monte{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .stage-tag{position:absolute;top:10px;left:10px;z-index:2;font-size:8px;letter-spacing:.14em;
   text-transform:uppercase;padding:4px 7px;border-radius:2px;color:var(--gold);
+  background:var(--surface);
   background:color-mix(in srgb,var(--surface) 88%,transparent);border:1px solid var(--gold)}
 .stage-nav{position:absolute;bottom:10px;right:10px;z-index:2;display:flex;gap:6px}
 .stage-nav button{width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.5);
@@ -159,6 +164,7 @@ header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--p
 .ribbon{grid-column:1/-1;position:relative;overflow:hidden;
   border-block:1px solid var(--line2);background:var(--surface);
   /* les extremites s'estompent : le ruban parait sortir du cadre */
+  -webkit-mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);
   mask:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
 .ribbon-track{display:flex;gap:10px;width:max-content;padding:12px 0;
   animation:glisse var(--ribbon-duree,90s) linear infinite;will-change:transform}
@@ -185,7 +191,8 @@ header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--p
   text-overflow:ellipsis;text-align:center}
 
 /* ---------- barre de filtres ---------- */
-.toolbar{position:sticky;top:var(--head-h);z-index:50;background:color-mix(in srgb,var(--paper) 97%,transparent);
+.toolbar{position:sticky;top:var(--head-h);z-index:50;background:var(--paper);
+  background:color-mix(in srgb,var(--paper) 97%,transparent);
   backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
 .toolbar-in{display:flex;align-items:center;gap:10px;padding-block:10px;flex-wrap:wrap}
 .count{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -212,6 +219,7 @@ header.top{position:sticky;top:0;z-index:60;background:color-mix(in srgb,var(--p
 .chip i{font-style:normal;font-size:10px;color:var(--faint);font-variant-numeric:tabular-nums}
 .chip.on i{color:var(--gold)}
 .brandbox{max-height:200px;overflow:auto;padding-right:4px;
+  -webkit-mask:linear-gradient(#000 calc(100% - 22px),transparent);
   mask:linear-gradient(#000 calc(100% - 22px),transparent)}
 .rangeval{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;margin-bottom:8px}
 .rangeval b{color:var(--ink);font-weight:600}
@@ -232,11 +240,16 @@ main{padding:22px 0 60px;min-height:60vh}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:3px;overflow:hidden;cursor:pointer;
   transition:border-color .17s ease,box-shadow .17s ease,transform .17s ease;display:flex;flex-direction:column;text-align:left;padding:0;font:inherit;color:inherit}
 .card:hover{border-color:var(--gold-lit);box-shadow:var(--shadow);transform:translateY(-2px)}
-.shot{position:relative;aspect-ratio:1/1;background:var(--tile);display:grid;place-items:center;overflow:hidden}
+.shot{position:relative;aspect-ratio:1/1;background:var(--tile);overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
 .shot img{width:100%;height:100%;object-fit:cover}
-.shot svg{width:auto;height:88%}
+/* Largeur en pourcentage, hauteur deduite du viewBox. Une hauteur en
+   pourcentage dans un bloc dont la hauteur vient d'un aspect-ratio se resout
+   a zero sur Safari : l'illustration disparaissait purement et simplement. */
+.shot svg{width:68%;height:auto;display:block}
 .tag{position:absolute;top:7px;left:7px;font-size:8px;letter-spacing:.13em;text-transform:uppercase;
-  padding:3px 6px;border-radius:2px;background:color-mix(in srgb,var(--surface) 88%,transparent);
+  padding:3px 6px;border-radius:2px;background:var(--surface);
+  background:color-mix(in srgb,var(--surface) 88%,transparent);
   color:var(--muted);border:1px solid var(--line2);backdrop-filter:blur(4px)}
 .tag.photo{color:var(--gold);border-color:var(--gold)}
 .cbody{padding:11px 12px 13px;display:flex;flex-direction:column;gap:3px;flex:1}
