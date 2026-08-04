@@ -617,7 +617,6 @@ function reset(){
   F.lo=0; F.hi=LAST; F.dmin=0; F.dmax=60; F.photo=false;
   $("#q").value=""; $("#lo").value=0; $("#hi").value=LAST;
   $("#dmin").value=0; $("#dmax").value=60;
-  $("#f-photo").classList.remove("on");
   priceLabel(); diaLabel(); render(); saveState();
 }
 
@@ -629,7 +628,6 @@ function init(){
   $("#lo").value = F.lo; $("#hi").value = F.hi;
   $("#dmin").value = F.dmin; $("#dmax").value = F.dmax;
   buildPick();
-  $("#f-photo").classList.toggle("on", F.photo);
   $("#group").classList.toggle("on", F.group);
   priceLabel(); diaLabel();
 
@@ -650,7 +648,6 @@ function init(){
   $("#hi").oninput = e => { F.hi = Math.max(+e.target.value, F.lo); e.target.value=F.hi; priceLabel(); render(); saveState(); };
   $("#dmin").oninput = e => { F.dmin = Math.min(+e.target.value, F.dmax); e.target.value=F.dmin; diaLabel(); render(); saveState(); };
   $("#dmax").oninput = e => { F.dmax = Math.max(+e.target.value, F.dmin); e.target.value=F.dmax; diaLabel(); render(); saveState(); };
-  $("#f-photo").onclick = e => { F.photo = !F.photo; e.currentTarget.classList.toggle("on", F.photo); render(); saveState(); };
   $("#group").onclick = e => { F.group = !F.group; e.currentTarget.classList.toggle("on", F.group); render(); saveState(); };
   $("#reset").onclick = reset;
   $("#actifs").onclick = reset;
