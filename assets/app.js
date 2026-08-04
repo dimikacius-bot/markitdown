@@ -581,19 +581,20 @@ function init(){
 
   const theme = store.get("mitry-theme");
   if(theme) document.documentElement.dataset.theme = theme;
-  let fonduTimer = 0;
   $("#theme").onclick = () => {
     const root = document.documentElement;
     const cur = root.dataset.theme
       || (matchMedia("(prefers-color-scheme:dark)").matches ? "dark" : "light");
     const next = cur === "dark" ? "light" : "dark";
-    // la classe n'est portee que le temps du fondu, puis retiree pour rendre
-    // aux survols et aux filtres leur reactivite immediate
-    root.classList.add("theme-fondu");
-    clearTimeout(fonduTimer);
-    fonduTimer = setTimeout(() => root.classList.remove("theme-fondu"), 650);
-    root.dataset.theme = next;
-    store.set("mitry-theme", next);
+    const applique = () => { root.dataset.theme = next; store.set("mitry-theme", next); };
+    // le navigateur photographie la page, applique le theme, puis fond les deux
+    // images l'une dans l'autre : une seule couche animee au lieu de centaines
+    if(document.startViewTransition
+       && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+      document.startViewTransition(applique);
+    } else {
+      applique();
+    }
   };
 
   const top = $("#totop");
