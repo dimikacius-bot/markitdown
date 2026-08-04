@@ -6,7 +6,7 @@ const CASE_LABELS = {
   steel:"Acier", "steel-pvd":"Acier PVD", "steel-gold":"Acier & or", titanium:"Titane",
   gold:"Or", ceramic:"Céramique", bioceramic:"Bioceramic", carbon:"Carbone",
   aluminium:"Aluminium", brass:"Laiton", resin:"Résine", composite:"Composite",
-  breitlight:"Breitlight",
+  breitlight:"Breitlight", stone:"Granit", wood:"Bois",
 };
 const TYPE_LABELS  = {auto:"Automatique", manuel:"Remontage manuel", quartz:"Quartz",
                       solaire:"Solaire", springdrive:"Spring Drive", kinetic:"Kinetic",
@@ -30,6 +30,7 @@ const METALS = {
   brass:["#efdcb0","#a4834a","#dcc48a"], composite:["#4c4a44","#191814","#333029"],
   breitlight:["#43423e","#141310","#2b2a26"], black:["#3d3d3d","#101010","#2a2a2a"],
   resin:["#3a3a36","#141412","#2b2b27"],
+  stone:["#8d8f86","#4a4c46","#6e7068"], wood:["#c08a52","#6b4425","#9a6a3c"],
 };
 
 const $  = (s, r=document) => r.querySelector(s);
