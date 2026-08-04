@@ -1,0 +1,32 @@
+{
+ "PHOTOS": {
+  "Tissot|PRX Powermatic 80": "prx",
+  "Tissot|PRX Quartz": "prxred",
+  "Tissot|Gentleman Powermatic 80": "gent",
+  "Tissot|Supersport Chrono": "sup",
+  "Seiko|Alpinist SPB121": "alp",
+  "Seiko|Prospex Speedtimer Chronograph": "speed",
+  "Rolex|Submariner Date": "sub",
+  "Rolex|Submariner Date Or et Acier": "subgold",
+  "Rolex|Datejust 41": "dj41",
+  "Rolex|Lady-Datejust 31": "ladydj",
+  "Breitling|Navitimer B01": "nav",
+  "Cartier|Santos Medium": "santos",
+  "Cartier|Santos Or et Acier": "santosgold",
+  "IWC|Ingenieur Automatic 40": "ingen",
+  "IWC|Portugieser Calendrier Perpétuel": "portperp",
+  "IWC|Pilot's Watch Top Gun Mojave Desert": "mojave",
+  "IWC|Pilot's Watch Chronograph Top Gun": "topgunchr",
+  "Omega|Seamaster Diver 300M Chronographe": "omgchr",
+  "Tudor|Black Bay GMT": "bbgmt",
+  "Tudor|Black Bay 58": "bb58",
+  "TAG Heuer|Formula 1 Chronographe": "tagf1",
+  "Richard Mille|RM 11-03": "rm1103",
+  "Richard Mille|RM 35-03 Rafael Nadal": "rm3503"
+ },
+ "PHOTOS2": {
+  "Richard Mille|RM 11-03": "rm1103b",
+  "TAG Heuer|Formula 1 Chronographe": "tagf1b",
+  "Tissot|Supersport Chrono": "sup2"
+ }
+}

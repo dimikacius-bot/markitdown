@@ -1,0 +1,6 @@
+build/cache/
+build/planches*/
+__pycache__/
+*.log
+img/commons/
+dist/

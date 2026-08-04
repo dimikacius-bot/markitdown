@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mitry Watch — Répertoire horloger</title>
+<meta name="description" content="Répertoire horloger : 168 montres photographiées, de 20 € à 245 000 €, classées par maison, avec prix, diamètre, boîtier et mouvement.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Cormorant+Garamond:wght@300;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23141310'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%23b8935a' stroke-width='2'/%3E%3Cpath d='M16 10v6l4 3' stroke='%23b8935a' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <img class="crest" src="img/orig/logo.webp" alt="">
+    <div class="word">MITRY WATCH<small>Répertoire horloger</small></div>
+    <div class="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+      <input id="q" type="search" placeholder="Marque, modèle, référence…" aria-label="Rechercher">
+    </div>
+    <div class="top-actions">
+      <button class="btn hide-s" id="theme">Thème</button>
+    </div>
+  </div>
+</header>
+
+<section class="showcase" aria-label="Sélection du répertoire">
+  <div class="wrap show-in">
+    <div class="stage" id="stage" role="button" tabindex="0"
+         aria-label="Ouvrir la fiche de la montre présentée"></div>
+    <div class="show-copy">
+      <div class="show-head">
+        <p class="eyebrow">Sélection du répertoire</p>
+        <span class="show-count" id="show-count"></span>
+      </div>
+      <div class="show-brand" id="show-brand"></div>
+      <p class="show-model" id="show-model"></p>
+      <div class="show-price" id="show-price"></div>
+      <p class="show-note" id="show-note"></p>
+      <div class="show-meta" id="show-meta"></div>
+      <div class="show-cta">
+        <button class="btn primary" id="show-open">Voir la fiche</button>
+        <a class="btn" id="show-site" target="_blank" rel="noopener">Site de la maison</a>
+      </div>
+    </div>
+    <div class="ribbon" id="ribbon" aria-label="Défilé de montres">
+      <div class="ribbon-track" id="ribbon-track"></div>
+    </div>
+  </div>
+</section>
+
+<section class="hero">
+  <div class="wrap hero-in">
+    <div>
+      <p class="eyebrow">Collection documentée</p>
+      <h1>Le temps, façonné par <span id="h-brands">cinquante-six</span> maisons</h1>
+      <p>Chaque pièce porte son prix, son diamètre, la matière de son boîtier et la
+         nature de son mouvement. Classées par maison, filtrables par tout le reste.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="n-watches">—</b><span>Montres</span></div>
+      <div class="stat"><b id="n-brands">—</b><span>Maisons</span></div>
+      <div class="stat"><b id="n-photos">—</b><span>Photographiées</span></div>
+    </div>
+  </div>
+</section>
+
+<div class="toolbar">
+  <div class="wrap toolbar-in">
+    <button class="btn" id="filters" aria-expanded="false" aria-controls="panel">Filtres</button>
+    <button class="btn on" id="group">Grouper par marque</button>
+    <span class="count" id="count"></span>
+    <button class="actifs" id="actifs" hidden>
+      <span id="actifs-n"></span> filtre(s) actif(s) — tout afficher ✕
+    </button>
+    <span class="spacer"></span>
+    <div class="pick" id="sort-pick">
+      <button class="pick-btn" id="sort-btn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="pick-lab">Trier</span>
+        <span class="pick-val" id="sort-val">Par maison</span>
+        <svg class="pick-arrow" viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5l5-5"/></svg>
+      </button>
+      <ul class="pick-menu" id="sort-menu" role="listbox" aria-label="Trier" hidden>
+        <li role="option" tabindex="-1" data-v="brand">Par maison</li>
+        <li role="option" tabindex="-1" data-v="priceUp">Prix croissant</li>
+        <li role="option" tabindex="-1" data-v="priceDown">Prix décroissant</li>
+        <li role="option" tabindex="-1" data-v="dia">Diamètre</li>
+        <li role="option" tabindex="-1" data-v="name">Nom du modèle</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel">
+  <div class="wrap">
+    <div class="panel-in">
+      <div class="fgroup">
+        <h3>Prix</h3>
+        <div class="rangeval" id="priceval"></div>
+        <input type="range" id="lo" min="0" max="18" step="1" aria-label="Prix minimum">
+        <input type="range" id="hi" min="0" max="18" step="1" aria-label="Prix maximum">
+        <h3 style="margin-top:16px">Diamètre</h3>
+        <div class="rangeval" id="diaval"></div>
+        <input type="range" id="dmin" min="0" max="60" step="1" aria-label="Diamètre minimum">
+        <input type="range" id="dmax" min="0" max="60" step="1" aria-label="Diamètre maximum">
+      </div>
+      <div class="fgroup">
+        <h3>Mouvement</h3><div class="chips" id="f-types"></div>
+        <h3 style="margin-top:16px">Affichage</h3><div class="chips" id="f-disp"></div>
+      </div>
+      <div class="fgroup">
+        <h3>Boîtier</h3><div class="chips" id="f-cases"></div>
+        <h3 style="margin-top:16px">Style</h3><div class="chips" id="f-styles"></div>
+      </div>
+      <div class="fgroup">
+        <h3>Maison</h3>
+        <div class="chips brandbox" id="f-brands"></div>
+      </div>
+    </div>
+    <div class="panel-foot">
+      <button class="btn" id="reset">Tout réinitialiser</button>
+    </div>
+  </div>
+</div>
+
+<main class="wrap"><div id="out"></div></main>
+
+<footer class="wrap">
+  <div class="fw">Mitry Watch</div>
+  Répertoire personnel. Un ✓ signale un tarif relevé en août 2026 sur le marché français&nbsp;;
+  les autres prix, précédés de ≈, restent des estimations.<br>
+  Seules les pièces disposant d'une photographie figurent ici. Les visuels proviennent de
+  Wikimedia Commons — auteur et licence sont crédités sur chaque fiche. La mention
+  <em>variante</em> signale une photo de la collection dont la référence exacte n'est pas confirmée.
+</footer>
+
+<button class="totop" id="totop" aria-label="Revenir en haut">↑</button>
+<dialog class="sheet" id="sheet"><div class="sheet-in" id="sheet-in"></div></dialog>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
