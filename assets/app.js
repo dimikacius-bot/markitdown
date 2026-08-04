@@ -9,7 +9,7 @@ const CASE_LABELS = {
   breitlight:"Breitlight",
 };
 const TYPE_LABELS  = {auto:"Automatique", manuel:"Remontage manuel", quartz:"Quartz",
-                      solaire:"Solaire", "connectée":"Connectée"};
+                      solaire:"Solaire", springdrive:"Spring Drive", "connectée":"Connectée"};
 const STYLE_LABELS = {dive:"Plongée", chrono:"Chronographe", dress:"Habillée",
                       pilot:"Aviation", sport:"Sport"};
 const DISP_LABELS  = {aiguilles:"Aiguilles", digital:"Écran", hybride:"Écran + aiguilles"};
@@ -228,8 +228,12 @@ function cardHTML(w){
 
 function render(){
   const list = selected();
+  // dans chaque maison, les pieces photographiees ouvrent la serie : arriver sur
+  // une rangee de dessins donne l'impression d'un catalogue inachevé
   const cmp = {
-    brand:(a,b)=> a.brand.localeCompare(b.brand,"fr") || a.price-b.price,
+    brand:(a,b)=> a.brand.localeCompare(b.brand,"fr")
+      || (b.shots.length ? 1 : 0) - (a.shots.length ? 1 : 0)
+      || a.price-b.price,
     priceUp:(a,b)=> a.price-b.price,
     priceDown:(a,b)=> b.price-a.price,
     dia:(a,b)=> (a.dia||0)-(b.dia||0),
